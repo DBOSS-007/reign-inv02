@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Reign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-art">
+    <a href="index.html" class="crest" style="color:#fff;"><span class="mark"></span><span class="name">Reign</span></a>
+    <div>
+      <h2 style="color:#fff;font-size:32px;max-width:380px;">Welcome back to your portfolio.</h2>
+      <p style="color:rgba(255,255,255,.65);max-width:360px;line-height:1.6;">Log in to fund your wallet, track active investments and review your latest transactions.</p>
+    </div>
+    <div style="color:rgba(255,255,255,.4);font-size:12.5px;">Demo admin — admin@reign.com / Admin123!</div>
+  </div>
+  <div class="auth-form">
+    <div class="box">
+      <div class="eyebrow" style="margin-bottom:18px;">Sign in</div>
+      <h1 style="font-size:28px;">Login to Reign</h1>
+      <p style="color:var(--muted);margin-bottom:28px;font-size:14.5px;">New here? <a href="register.html" style="color:var(--gold-dim);font-weight:600;">Create an account</a></p>
+
+      <form id="loginForm">
+        <div class="field">
+          <label>Email address</label>
+          <input type="email" id="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••••" required>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:22px;">
+          <a href="forgot-password.html" style="font-size:13px;color:var(--gold-dim);font-weight:600;">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-navy btn-block">Login</button>
+      </form>
+      <p id="err" style="color:var(--coral);font-size:13.5px;margin-top:14px;display:none;"></p>
+    </div>
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script>
+  if(DB.currentUser()){ window.location.href = DB.currentUser().role==='admin' ? 'admindash.html' : 'userdash.html'; }
+  document.getElementById('loginForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const err = document.getElementById('err');
+    try{
+      const u = DB.login(document.getElementById('email').value.trim(), document.getElementById('password').value);
+      window.location.href = u.role === 'admin' ? 'admindash.html' : 'userdash.html';
+    }catch(ex){
+      err.textContent = ex.message; err.style.display='block';
+    }
+  });
+</script>
+</body>
+</html>

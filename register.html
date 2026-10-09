@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account — Reign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}</style>
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-art">
+    <a href="index.html" class="crest" style="color:#fff;"><span class="mark"></span><span class="name">Reign</span></a>
+    <div>
+      <h2 style="color:#fff;font-size:32px;max-width:380px;">Every account starts with ₦500,000 demo funds.</h2>
+      <p style="color:rgba(255,255,255,.65);max-width:360px;line-height:1.6;">Explore deposits, conversions and investment plans risk-free before you ever touch real capital.</p>
+    </div>
+    <div style="color:rgba(255,255,255,.4);font-size:12.5px;">Reign Investment Platform — demo prototype</div>
+  </div>
+  <div class="auth-form">
+    <div class="box">
+      <div class="eyebrow" style="margin-bottom:18px;">Get started</div>
+      <h1 style="font-size:28px;">Create your account</h1>
+      <p style="color:var(--muted);margin-bottom:26px;font-size:14.5px;">Already registered? <a href="login.html" style="color:var(--gold-dim);font-weight:600;">Login</a></p>
+
+      <form id="regForm">
+        <div class="two">
+          <div class="field"><label>First name</label><input id="firstName" required></div>
+          <div class="field"><label>Last name</label><input id="lastName" required></div>
+        </div>
+        <div class="field"><label>Email address</label><input type="email" id="email" required></div>
+        <div class="field"><label>Phone number</label><input id="phone" placeholder="0801 234 5678" required></div>
+        <div class="two">
+          <div class="field"><label>Password</label><input type="password" id="password" required minlength="6"></div>
+          <div class="field"><label>Confirm password</label><input type="password" id="confirm" required minlength="6"></div>
+        </div>
+        <div class="field"><label>Referral code <span style="text-transform:none;font-weight:400;">(optional)</span></label><input id="referredBy" placeholder="RGN-XXXXX"></div>
+        <div class="field-inline" style="margin-bottom:22px;">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
+        </div>
+        <button type="submit" class="btn btn-navy btn-block">Create account</button>
+      </form>
+      <p id="err" style="color:var(--coral);font-size:13.5px;margin-top:14px;display:none;"></p>
+    </div>
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script>
+  if(DB.currentUser()){ window.location.href = DB.currentUser().role==='admin' ? 'admindash.html' : 'userdash.html'; }
+  document.getElementById('regForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    const err = document.getElementById('err');
+    err.style.display='none';
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm').value;
+    if(password !== confirm){ err.textContent='Passwords do not match.'; err.style.display='block'; return; }
+    try{
+      DB.register({
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        password,
+        referredBy: document.getElementById('referredBy').value.trim() || null,
+      });
+      DB.login(document.getElementById('email').value.trim(), password);
+      window.location.href = 'userdash.html';
+    }catch(ex){ err.textContent = ex.message; err.style.display='block'; }
+  });
+</script>
+</body>
+</html>

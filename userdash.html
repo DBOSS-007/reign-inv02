@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Reign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .wallet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .wallet-card{padding:22px;}
+  .wallet-card .ccy{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.1em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:10px;}
+  .wallet-card .bal{font-family:var(--font-display);font-size:24px;color:var(--navy);margin-bottom:4px;word-break:break-all;}
+  .wallet-card .sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+  .wallet-card .row-btns{display:flex;gap:8px;}
+  .rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .rate-card{padding:18px;text-align:center;}
+  .rate-card .c{font-family:var(--font-display);font-size:19px;color:var(--navy);}
+  .rate-card .r{font-size:12.5px;color:var(--muted);margin-top:6px;}
+  .section-title{display:flex;align-items:center;justify-content:space-between;margin:34px 0 16px;}
+  .section-title h3{font-size:19px;margin:0;}
+  .plan-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px;}
+  .plan-pick .p{border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;text-align:center;transition:.15s;}
+  .plan-pick .p.sel{border-color:var(--gold);background:var(--amber-soft);}
+  .plan-pick .p b{display:block;font-family:var(--font-display);font-size:18px;color:var(--navy);}
+  .plan-pick .p span{font-size:11.5px;color:var(--muted);}
+  .notif-item{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line);}
+  .notif-item:first-child{border-top:none;}
+  .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:6px;flex-shrink:0;}
+  .notif-item.read .notif-dot{background:var(--line);}
+  .kyc-status-card{padding:24px;display:flex;gap:18px;align-items:flex-start;}
+  .kyc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);}
+  .empty b{display:block;color:var(--navy);font-family:var(--font-display);font-size:16px;margin-bottom:6px;}
+  .completion-bar{height:8px;background:#eee7d0;border-radius:99px;overflow:hidden;margin:10px 0 4px;}
+  .completion-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--emerald));}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .ref-box{display:flex;align-items:center;gap:10px;background:var(--parchment-2);border:1px dashed var(--gold-dim);border-radius:10px;padding:14px 16px;font-family:var(--font-mono);font-size:14px;color:var(--navy);}
+  @media (max-width:1100px){.wallet-grid,.rate-grid,.plan-pick{grid-template-columns:1fr 1fr;}}
+  @media (max-width:640px){.wallet-grid,.rate-grid,.plan-pick,.two{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><a href="userdash.html" class="crest"><span class="mark"></span><span class="name">Reign</span></a></div>
+    <nav id="sideNav">
+      <div class="section-label">Overview</div>
+      <a class="navlink" data-panel="overview" href="#">🏠 <span>Dashboard</span></a>
+      <a class="navlink" data-panel="user" href="#">👤 <span>User Profile</span></a>
+
+      <div class="section-label">Money</div>
+      <a class="navlink" data-panel="wallet" href="#">💳 <span>Wallet</span></a>
+      <a class="navlink" data-panel="deposit" href="#">⬇️ <span>Deposit</span></a>
+      <a class="navlink" data-panel="invest" href="#">📈 <span>Investment Plan</span></a>
+      <a class="navlink" data-panel="withdraw" href="#">⬆️ <span>Withdraw</span></a>
+      <a class="navlink" data-panel="transactions" href="#">🧾 <span>Transactions</span></a>
+
+      <div class="section-label">Growth</div>
+      <a class="navlink" data-panel="commission" href="#">💰 <span>Commission Record</span></a>
+      <a class="navlink" data-panel="referral" href="#">🔗 <span>Referral</span></a>
+
+      <div class="section-label">Account</div>
+      <a class="navlink" data-panel="notifications" href="#">🔔 <span>Notification</span> <span id="notifBadge" class="pill pill-danger" style="display:none;margin-left:auto;"></span></a>
+      <a class="navlink" data-panel="kyc" href="#">🪪 <span>KYC Documents</span></a>
+      <a class="navlink" data-panel="bank" href="#">🏦 <span>Bank Details</span></a>
+      <a class="navlink" href="update-password.html">🔒 <span>Update Password</span></a>
+      <a class="navlink" id="logoutBtn" href="#">🚪 <span>Log out</span></a>
+    </nav>
+    <div class="foot">
+      <div class="userchip">
+        <div class="avatar" id="avatar">--</div>
+        <div style="overflow:hidden;">
+          <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="userName">—</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="userEmail">—</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="icon-btn" id="menuBtn" style="display:none;">☰</button>
+        <div id="pageTitle" style="font-family:var(--font-display);font-size:19px;color:var(--navy);">Welcome back</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span id="kycTopPill" class="pill pill-neutral"></span>
+        <a href="userdash.html?panel=invest" class="btn btn-gold btn-sm" onclick="switchPanel('invest');return false;">+ Invest</a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <section class="panel" id="panel-overview">
+        <div class="eyebrow">Welcome back 👋</div>
+        <h2 id="welcomeHeading">Welcome back</h2>
+        <p style="color:var(--muted);margin-bottom:28px;">Invest, fund your wallets and convert between Naira, USD, Bitcoin and USDT from one dashboard.</p>
+
+        <div class="section-title"><h3>Market Overview</h3><span style="font-size:12.5px;color:var(--muted);">Live Exchange Rates</span></div>
+        <div class="rate-grid">
+          <div class="card rate-card"><div class="c">NGN</div><div class="r">1.00000000</div></div>
+          <div class="card rate-card"><div class="c">USD</div><div class="r">1,361.59977998</div></div>
+          <div class="card rate-card"><div class="c">USDT</div><div class="r">1,360.41000000</div></div>
+          <div class="card rate-card"><div class="c">BTC</div><div class="r">86,638,594.00000000</div></div>
+        </div>
+
+        <div class="section-title"><h3>Investment Overview</h3></div>
+        <div class="stat-grid" id="invOverview"></div>
+
+        <div class="section-title"><h3>Recent Transactions</h3><a href="#" onclick="switchPanel('transactions');return false;" style="font-size:13px;color:var(--gold-dim);font-weight:600;">View all →</a></div>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Type</th><th>Currency</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentTxBody"></tbody></table></div>
+
+        <div class="section-title"><h3>Recent Investments</h3><a href="#" onclick="switchPanel('invest');return false;" style="font-size:13px;color:var(--gold-dim);font-weight:600;">View all →</a></div>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Plan</th><th>Principal</th><th>Current Value</th><th>Progress</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentInvBody"></tbody></table></div>
+      </section>
+
+      <!-- USER PROFILE -->
+      <section class="panel" id="panel-user">
+        <div class="eyebrow">My Profile</div>
+        <h2>Personal information</h2>
+        <p style="color:var(--muted);">Complete your profile to unlock all account features.</p>
+        <div class="card card-pad" style="margin-bottom:24px;max-width:420px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);"><span>Profile completion</span><b style="color:var(--navy);" id="pctLabel">0%</b></div>
+          <div class="completion-bar"><i id="pctBar" style="width:0%;"></i></div>
+        </div>
+        <form id="profileForm" class="card card-pad" style="max-width:640px;">
+          <div class="two">
+            <div class="field"><label>First name</label><input id="pFirstName"></div>
+            <div class="field"><label>Last name</label><input id="pLastName"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>Middle name</label><input id="pMiddleName"></div>
+            <div class="field"><label>Email</label><input id="pEmail" disabled></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>Phone number</label><input id="pPhone"></div>
+            <div class="field"><label>Date of birth</label><input type="date" id="pDob"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>Gender</label><select id="pGender"><option value="">----------</option><option>Female</option><option>Male</option><option>Prefer not to say</option></select></div>
+            <div class="field"><label>Marital status</label><select id="pMarital"><option value="">----------</option><option>Single</option><option>Married</option><option>Divorced</option></select></div>
+          </div>
+          <div class="field"><label>Postal code</label><input id="pPostal" style="max-width:200px;"></div>
+          <h3 style="font-size:16px;margin-top:8px;">Address</h3>
+          <div class="two">
+            <div class="field"><label>Country</label><input id="pCountry"></div>
+            <div class="field"><label>State</label><input id="pState"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>City</label><input id="pCity"></div>
+            <div class="field"><label>Address</label><input id="pAddress"></div>
+          </div>
+          <button type="submit" class="btn btn-navy">Save profile</button>
+        </form>
+
+        <div class="section-title"><h3>Account security &amp; verification</h3></div>
+        <div class="card card-pad" style="max-width:640px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--line);">
+            <div><b style="font-size:14px;">Email address</b><div style="font-size:12.5px;color:var(--muted);" id="secEmail">—</div></div>
+            <span class="pill pill-success">Verified</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);">
+            <div><b style="font-size:14px;">Phone number</b><div style="font-size:12.5px;color:var(--muted);" id="secPhone">—</div></div>
+            <span class="pill pill-success">Verified</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;">
+            <div><b style="font-size:14px;">Two-factor authentication</b><div style="font-size:12.5px;color:var(--muted);">Add an additional layer of security</div></div>
+            <button class="btn btn-outline btn-sm" id="twofaBtn">Set up 2FA</button>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);">
+            <a href="update-password.html" class="btn btn-ghost btn-sm" style="padding-left:0;">Update password →</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- WALLET -->
+      <section class="panel" id="panel-wallet">
+        <div class="eyebrow">My Wallets</div>
+        <h2>Wallet balances</h2>
+        <div class="wallet-grid" id="walletGrid"></div>
+      </section>
+
+      <!-- DEPOSIT -->
+      <section class="panel" id="panel-deposit">
+        <div class="eyebrow">Fund wallet</div>
+        <h2>Deposit funds</h2>
+        <p style="color:var(--muted);margin-bottom:22px;">This demo credits your wallet instantly — no real payment is processed.</p>
+        <form id="depositForm" class="card card-pad" style="max-width:440px;">
+          <div class="field"><label>Currency</label>
+            <select id="depCcy"><option value="NGN">NGN — Naira</option><option value="USD">USD — US Dollar</option><option value="USDT">USDT — Tether</option><option value="BTC">BTC — Bitcoin</option></select>
+          </div>
+          <div class="field"><label>Amount</label><input type="number" id="depAmount" min="1" step="any" required placeholder="0.00"></div>
+          <div class="field"><label>Payment method</label>
+            <select id="depMethod"><option>Bank Transfer</option><option>Card Payment</option><option>Crypto Deposit Address</option></select>
+          </div>
+          <button type="submit" class="btn btn-emerald btn-block">Fund wallet</button>
+        </form>
+      </section>
+
+      <!-- INVEST -->
+      <section class="panel" id="panel-invest">
+        <div class="eyebrow">Investment plans</div>
+        <div class="section-title" style="margin-top:0;"><h3 style="font-size:22px;font-family:var(--font-display);">My Investments</h3><button class="btn btn-gold btn-sm" id="openInvestBtn">+ Invest</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Plan</th><th>Principal</th><th>Current Value</th><th>Progress</th><th>Status</th><th>Matures</th></tr></thead><tbody id="investBody"></tbody></table></div>
+      </section>
+
+      <!-- WITHDRAW -->
+      <section class="panel" id="panel-withdraw">
+        <div class="eyebrow">Withdraw</div>
+        <h2>Request a withdrawal</h2>
+        <div id="withdrawKycNotice" style="display:none;" class="card card-pad" style="max-width:520px;border-color:var(--coral);"></div>
+        <form id="withdrawForm" class="card card-pad" style="max-width:440px;">
+          <div class="field"><label>Currency</label>
+            <select id="wdCcy"><option value="NGN">NGN — Naira</option><option value="USD">USD — US Dollar</option><option value="USDT">USDT — Tether</option><option value="BTC">BTC — Bitcoin</option></select>
+          </div>
+          <div class="field"><label>Amount</label><input type="number" id="wdAmount" min="1" step="any" required></div>
+          <div class="field"><label>Bank account</label><select id="wdBank"></select></div>
+          <p class="hint" id="wdAvail" style="margin-bottom:14px;"></p>
+          <button type="submit" class="btn btn-navy btn-block">Request withdrawal</button>
+        </form>
+        <div class="section-title"><h3>Withdrawal history</h3></div>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Currency</th><th>Amount</th><th>Bank</th><th>Status</th><th>Requested</th></tr></thead><tbody id="withdrawBody"></tbody></table></div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section class="panel" id="panel-transactions">
+        <div class="eyebrow">History</div>
+        <h2>All transactions</h2>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Type</th><th>Currency</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="allTxBody"></tbody></table></div>
+      </section>
+
+      <!-- COMMISSION -->
+      <section class="panel" id="panel-commission">
+        <div class="eyebrow">Earnings</div>
+        <h2>Commission record</h2>
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:26px;">
+          <div class="card stat"><div class="label">Total commission</div><div class="value" id="commTotal">₦0.00</div></div>
+          <div class="card stat"><div class="label">Referrals with activity</div><div class="value" id="commReferrals">0</div></div>
+          <div class="card stat"><div class="label">Commission rate</div><div class="value">5%</div></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Referral</th><th>Source</th><th>Investment</th><th>Commission</th><th>Date</th></tr></thead><tbody id="commBody"></tbody></table></div>
+      </section>
+
+      <!-- REFERRAL -->
+      <section class="panel" id="panel-referral">
+        <div class="eyebrow">Grow together</div>
+        <h2>Your referral program</h2>
+        <p style="color:var(--muted);margin-bottom:18px;">Share your code — you'll earn 5% commission whenever a referral makes an investment.</p>
+        <div class="ref-box" style="max-width:440px;margin-bottom:26px;">
+          <span id="refCode">RGN-XXXXX</span>
+          <button class="btn btn-outline btn-sm" id="copyRefBtn" style="margin-left:auto;">Copy</button>
+        </div>
+        <div class="section-title" style="margin-top:0;"><h3>Referred members</h3></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Investments</th></tr></thead><tbody id="referralBody"></tbody></table></div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section class="panel" id="panel-notifications">
+        <div class="eyebrow">Inbox</div>
+        <h2>Notifications</h2>
+        <div class="card card-pad" style="max-width:640px;" id="notifList"></div>
+      </section>
+
+      <!-- KYC -->
+      <section class="panel" id="panel-kyc">
+        <div class="eyebrow">Identity verification</div>
+        <h2>KYC documents</h2>
+        <p style="color:var(--muted);margin-bottom:20px;">Verify your identity to unlock withdrawals and full account features.</p>
+        <div class="card kyc-status-card" style="max-width:640px;margin-bottom:24px;" id="kycStatusCard"></div>
+        <div id="kycFormWrap" style="max-width:520px;"></div>
+      </section>
+
+      <!-- BANK -->
+      <section class="panel" id="panel-bank">
+        <div class="eyebrow">Payout destination</div>
+        <div class="section-title" style="margin-top:0;"><h3 style="font-size:22px;font-family:var(--font-display);">Bank accounts</h3><button class="btn btn-gold btn-sm" id="openBankBtn">+ Add bank account</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Bank</th><th>Account number</th><th>Account name</th><th>Default</th><th>Actions</th></tr></thead><tbody id="bankBody"></tbody></table></div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- INVEST MODAL -->
+<div class="modal-backdrop" id="investModal">
+  <div class="modal">
+    <div class="modal-head"><h3 style="margin:0;font-size:20px;">New investment</h3><button class="icon-btn" onclick="closeModal('investModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="plan-pick" id="planPick"></div>
+      <div class="field"><label>Wallet</label><select id="invWallet"></select></div>
+      <div class="field"><label>Amount</label><input type="number" id="invAmount" min="0" step="any" placeholder="0.00"></div>
+      <div class="card card-pad" style="background:var(--parchment-2);border-style:dashed;">
+        <b style="font-size:13px;color:var(--navy);display:block;margin-bottom:10px;">Investment summary</b>
+        <div id="invSummary" style="font-size:13.5px;line-height:1.9;color:var(--ink);"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('investModal')">Cancel</button>
+      <button class="btn btn-emerald" id="confirmInvestBtn">Invest</button>
+    </div>
+  </div>
+</div>
+
+<!-- KYC MODAL removed: inline form used instead -->
+
+<!-- BANK MODAL -->
+<div class="modal-backdrop" id="bankModal">
+  <div class="modal">
+    <div class="modal-head"><h3 style="margin:0;font-size:20px;">Add bank account</h3><button class="icon-btn" onclick="closeModal('bankModal')">✕</button></div>
+    <div class="modal-body">
+      <form id="bankForm">
+        <div class="field"><label>Bank</label><select id="bBank"></select></div>
+        <div class="field"><label>Account number</label><input id="bAccNum" maxlength="10" required></div>
+        <div class="field"><label>Account name</label><input id="bAccName" required></div>
+        <div class="field-inline"><input type="checkbox" id="bDefault"><label for="bDefault">Set as default account</label></div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('bankModal')">Cancel</button>
+      <button class="btn btn-emerald" id="saveBankBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERT MODAL -->
+<div class="modal-backdrop" id="convertModal">
+  <div class="modal">
+    <div class="modal-head"><h3 style="margin:0;font-size:20px;">Convert currency</h3><button class="icon-btn" onclick="closeModal('convertModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="two">
+        <div class="field"><label>From</label><select id="cvFrom"></select></div>
+        <div class="field"><label>To</label><select id="cvTo"></select></div>
+      </div>
+      <div class="field"><label>Amount</label><input type="number" id="cvAmount" min="0" step="any"></div>
+      <p class="hint" id="cvPreview"></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('convertModal')">Cancel</button>
+      <button class="btn btn-emerald" id="confirmConvertBtn">Convert</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/userdash.js"></script>
+</body>
+</html>

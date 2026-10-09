@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reign — Operations Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f5ff; --navy:#11183f; --navy2:#171e4b; --panel:#1b2357;
+  --panel2:#202962; --line:rgba(255,255,255,.08); --muted:#9299bd;
+  --text:#f4f6ff; --blue:#4aa8ff; --purple:#9c78ff; --green:#4bd35d;
+  --yellow:#d5d72b; --orange:#f09a34; --red:#ff5558; --shadow:0 28px 70px rgba(16,24,63,.24);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:#202544}
+body:before,body:after{content:"";position:fixed;width:190px;height:190px;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(#d9daf0 2px,transparent 2px);background-size:16px 16px;z-index:0}
+body:before{left:28px;top:110px} body:after{right:20px;bottom:40px}
+button,input,select{font:inherit}
+a{text-decoration:none;color:inherit}
+.app{position:relative;z-index:1;display:flex;width:min(1480px,calc(100% - 48px));min-height:calc(100vh - 56px);margin:28px auto;background:var(--navy);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+.sidebar{width:245px;flex:none;background:#10173c;padding:24px 16px 18px;display:flex;flex-direction:column}
+.brand{padding:4px 12px 18px}.crest{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#fff}
+.mark{width:27px;height:20px;position:relative;display:inline-block}
+.mark:before,.mark:after{content:"";position:absolute;left:0;width:24px;height:7px;border-radius:9px;transform:skewX(28deg)}
+.mark:before{top:2px;background:linear-gradient(90deg,#39d3db,#6d4dff)}
+.mark:after{bottom:1px;background:linear-gradient(90deg,#39d3db,#2476ff)}
+.console-badge{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:#7881a9;padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:12px}
+.section-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#68719a;margin:18px 12px 7px}
+.navlink{display:flex;align-items:center;gap:10px;min-height:40px;padding:9px 10px;border-radius:8px;color:#aeb5d5;font-size:12px;margin:3px 0;transition:.2s}
+.navlink:hover,.navlink.active{background:#1b2357;color:#fff}.navlink.active{box-shadow:inset 3px 0 0 var(--blue)}
+.nc{font-style:normal;font:600 9px "IBM Plex Mono";color:#65709e;width:23px}.navlink.active .nc{color:#58adff}
+.cnt{margin-left:auto;min-width:20px;text-align:center;padding:3px 6px;border-radius:20px;background:#51253b;color:#ff8d92;font-size:9px}
+.foot{margin-top:auto;border-top:1px solid var(--line);padding:15px 8px 0}.userchip{display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#303a78;color:#9fcfff;font-size:11px;font-weight:700}
+.main{min-width:0;flex:1;display:flex;flex-direction:column;background:#141b45}
+.topbar{height:67px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;border-bottom:1px solid var(--line);background:#151c47}
+.crumb{font-size:12px;color:#7f88ad}.crumb b{color:#f1f3ff}.env-tag{font-size:9px;letter-spacing:1px;color:#777fa6;padding:7px 10px;border:1px solid var(--line);border-radius:20px}
+.opchip{color:#eef1ff;font-size:11px;border-left:1px solid var(--line);padding-left:16px}.opchip small{display:block;color:#70799e;font-size:9px;margin-top:3px}
+.icon-btn{border:0;background:#242c60;color:#fff;border-radius:7px;padding:7px 10px}
+.content{padding:22px 24px 30px;overflow:auto}.panel{display:none}.panel.active{display:block}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:17px}.page-head h2{font-size:19px;margin:0 0 6px;color:#f5f7ff}.page-head p{font-size:11px;color:#7d86aa;margin:0}
+.filters{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:0;margin-bottom:18px;background:#171e4b;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.filter{padding:10px 12px;border-right:1px solid var(--line)}.filter:last-child{border:0}.filter label{display:block;font-size:9px;color:#70799e;margin-bottom:7px}.filter select{width:100%;background:transparent;color:#dce0f3;border:0;outline:0;font-size:11px}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}.kpi{background:linear-gradient(145deg,#232c68,#1d255a);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:16px 17px;box-shadow:0 8px 22px rgba(5,10,40,.15)}
+.kpi-top{display:flex;justify-content:space-between;align-items:center;color:#8892bb;font-size:10px}.kpi-icon{font-size:15px}.kpi .v{font-size:27px;font-weight:700;color:#f8f9ff;margin:9px 0 4px}.kpi .d{font-size:9px;color:#6f7ba6}.blue{color:var(--blue)!important}.purple{color:var(--purple)!important}.red{color:#ff6b6e!important}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px}.box{background:#191f50;border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin-bottom:16px}.box-h{padding:13px 15px;border-bottom:1px solid var(--line);font-size:11px;font-weight:600;color:#dfe3f6;display:flex;justify-content:space-between;align-items:center}.box-b{padding:16px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:11px 13px;text-align:left;border-bottom:1px solid rgba(255,255,255,.055);font-size:10px}th{color:#69749d;font-size:8px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}td{color:#bac1df}tbody tr:hover{background:rgba(255,255,255,.025)}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:20px;font-size:8px;font-weight:600}.badge:before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}.critical{color:#ff686b;background:rgba(255,80,85,.1)}.medium{color:#e5a034;background:rgba(229,160,52,.1)}.low{color:#59d1c0;background:rgba(89,209,192,.1)}.success{color:#56d16b;background:rgba(86,209,107,.1)}
+.split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,.8fr);gap:16px}.right-stack{display:flex;flex-direction:column}
+.ring-row{display:flex;align-items:center;gap:15px}.ring{width:82px;height:82px;border-radius:50%;background:conic-gradient(var(--yellow) 0 13%,#283264 13% 100%);position:relative;display:grid;place-items:center}.ring:after{content:"";position:absolute;inset:9px;border-radius:50%;background:#191f50}.ring strong{position:relative;z-index:1;color:#d9db28;font-size:17px}.ring-label{font-size:10px;color:#929abc}.ring-label b{display:block;color:#e8ebfa;font-size:11px;margin-top:4px}
+.bar-row{display:grid;grid-template-columns:70px 1fr 42px;gap:8px;align-items:center;margin:10px 0;font-size:9px;color:#929abc}.bar{height:7px;background:#2b3569;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;border-radius:9px;background:var(--blue)}.bar-row strong{text-align:right;color:#dfe4fb;font-size:9px}
+.alert-list{padding:4px 0}.alert{padding:12px 14px;border-bottom:1px solid var(--line)}.alert:last-child{border:0}.alert-title{font-size:10px;color:#e8ebf8;display:flex;justify-content:space-between}.alert-meta{font-size:8px;color:#727da6;margin-top:5px}.alert-meta b{color:#ff676c}
+.searchbar{display:flex;gap:9px;margin-bottom:14px}.searchbar input,.toolbar input,.toolbar select{background:#171e4b;border:1px solid var(--line);color:#dfe3f5;border-radius:7px;padding:10px 12px;outline:none;font-size:10px}.searchbar input{flex:1}.toolbar{display:flex;gap:9px;margin-bottom:14px}.toolbar input{flex:1}.toolbar select{min-width:160px}
+.tabs{display:flex;gap:7px;margin-bottom:14px}.tab{border:1px solid var(--line);background:#171e4b;color:#7f88aa;border-radius:20px;padding:7px 12px;font-size:9px;cursor:pointer}.tab.active{background:#edf0ff;color:#151b43}
+.btn{border:0;border-radius:6px;padding:8px 11px;font-size:9px;cursor:pointer}.btn-primary{background:#3e9ff4;color:white}.btn-danger{background:#8e303e;color:white}.btn-dark{background:#293365;color:#dfe5ff}.actions{display:flex;gap:5px}
+.report-grid{grid-template-columns:repeat(3,1fr)}
+.mini-chart{height:125px;display:flex;align-items:flex-end;gap:6px;padding:15px}.mini-chart i{display:block;flex:1;background:linear-gradient(to top,#398ee5,#72baff);border-radius:3px 3px 0 0;opacity:.8}
+.empty{padding:28px;text-align:center;color:#737da5;font-size:10px}
+.drawer-bg,.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(5,8,25,.65);z-index:20}.drawer,.modal{position:fixed;z-index:21;background:#171e4b;color:#eef1ff;box-shadow:0 20px 70px rgba(0,0,0,.4)}
+.drawer{right:0;top:0;height:100%;width:min(430px,92vw);padding:24px}.modal{left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,90vw);padding:24px;border-radius:10px}
+@media(max-width:1050px){.sidebar{width:205px}.dashboard-grid{grid-template-columns:1fr}.right-stack{display:grid;grid-template-columns:1fr 1fr;gap:16px}.filters{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){body:before,body:after{display:none}.app{width:100%;min-height:100vh;margin:0;border-radius:0}.sidebar{position:fixed;left:-250px;top:0;bottom:0;z-index:30;transition:.25s}.sidebar.open{left:0}.topbar{padding:0 15px}.content{padding:18px 14px}.icon-btn{display:block!important}.kpi-row,.split,.report-grid,.right-stack{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.env-tag{display:none}.topbar{height:60px}.page-head h2{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+  <div class="brand"><a class="crest" href="#"><span class="mark"></span><span>Reign</span></a></div>
+  <div class="console-badge">Operations console</div>
+  <nav>
+    <div class="section-label">Console</div>
+    <a class="navlink active" data-panel="overview"><i class="nc">01</i><span>Dashboard</span></a>
+    <div class="section-label">Compliance</div>
+    <a class="navlink" data-panel="registry"><i class="nc">02</i><span>User Registry</span></a>
+    <a class="navlink" data-panel="kyc"><i class="nc">03</i><span>KYC Review</span><span class="cnt">8</span></a>
+    <div class="section-label">Treasury &amp; Risk</div>
+    <a class="navlink" data-panel="payouts"><i class="nc">04</i><span>Payout Authorisation</span><span class="cnt">5</span></a>
+    <a class="navlink" data-panel="risk"><i class="nc">05</i><span>Risk Monitor</span><span class="cnt">3</span></a>
+    <div class="section-label">Records</div>
+    <a class="navlink" data-panel="audit"><i class="nc">06</i><span>Audit Log</span></a>
+    <a class="navlink" data-panel="reports"><i class="nc">07</i><span>Reports</span></a>
+  </nav>
+  <div class="foot"><div class="userchip"><div class="avatar">AD</div><div><div style="font-size:11px;font-weight:600;color:#eef1ff">Admin</div><div style="font:9px 'IBM Plex Mono';color:#6f789e;margin-top:3px">OPS-001</div><a href="#" id="logoutBtn" style="font-size:9px;color:#8fbaff;display:block;margin-top:5px">End session</a></div></div></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px"><button class="icon-btn" id="menuBtn">☰</button><div class="crumb">Console / <b id="pageTitle">Dashboard</b></div></div>
+  <div style="display:flex;align-items:center;gap:13px"><span class="env-tag">DEMO ENVIRONMENT</span><div class="opchip"><div style="text-align:right">Administrator<small id="today"></small></div></div></div>
+</header>
+
+<div class="content">
+<section class="panel active" id="panel-overview">
+  <div class="page-head"><div><h2>Operations Dashboard</h2><p>Platform position, open work items and compliance status.</p></div></div>
+  <div class="filters">
+    <div class="filter"><label>Application Domain</label><select><option>All Domain</option><option>Customer</option><option>Internal</option></select></div>
+    <div class="filter"><label>Application Name</label><select><option>All Application</option><option>Web App</option><option>Dashboard</option></select></div>
+    <div class="filter"><label>Exception Category</label><select><option>All Category</option><option>Authentication</option><option>Database</option></select></div>
+    <div class="filter"><label>Exception Severity</label><select><option>All Severity</option><option>Critical</option><option>Medium</option><option>Low</option></select></div>
+    <div class="filter"><label>Exception Type</label><select><option>All Type</option><option>System</option><option>Application</option></select></div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-top"><span>Total Exceptions</span><span class="kpi-icon red">✹</span></div><div class="v">4,381</div><div class="d">Open operational exceptions</div></div>
+    <div class="kpi"><div class="kpi-top"><span>Application Affected</span><span class="kpi-icon blue">▣</span></div><div class="v">142</div><div class="d">Across connected applications</div></div>
+    <div class="kpi"><div class="kpi-top"><span>Users Affected</span><span class="kpi-icon purple">♟</span></div><div class="v">14.6m</div><div class="d">Estimated affected users</div></div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div>
+      <div class="box"><div class="box-h">Action queue <span class="mono">8 open</span></div><div class="table-wrap"><table><thead><tr><th>Priority</th><th>Item</th><th>Subject</th><th>Age</th><th></th></tr></thead><tbody id="queueBody"></tbody></table></div></div>
+      <div class="box"><div class="box-h">Latest audit entries</div><div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Event</th><th>Subject</th><th>Detail</th></tr></thead><tbody id="auditMini"></tbody></table></div></div>
+    </div>
+    <aside class="right-stack">
+      <div class="box"><div class="box-h">All exceptions</div><div class="box-b"><div class="ring-row"><div class="ring"><strong>13%</strong></div><div class="ring-label">Exception rate<b>Within monitored threshold</b></div></div></div></div>
+      <div class="box"><div class="box-h">Exceptions alert <span style="font-size:9px;color:#6e789f">View all</span></div><div class="alert-list">
+        <div class="alert"><div class="alert-title">IOException <span class="badge critical">Critical</span></div><div class="alert-meta">12 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">InterruptedException <span class="badge critical">Critical</span></div><div class="alert-meta">20 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">FileNotFoundException <span class="badge critical">Critical</span></div><div class="alert-meta">37 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">RuntimeException <span class="badge medium">Medium</span></div><div class="alert-meta">4 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">NullPointerException <span class="badge low">Low</span></div><div class="alert-meta">2 minutes ago</div></div>
+      </div></div>
+      <div class="box"><div class="box-h">Notifications</div><div class="alert-list">
+        <div class="alert"><div class="alert-title">2 New Applications Connected</div><div class="alert-meta">2 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">Low System Status</div><div class="alert-meta">48 minutes ago</div></div>
+        <div class="alert"><div class="alert-title">Failed Login Attempt</div><div class="alert-meta">4 hours ago</div></div>
+        <div class="alert"><div class="alert-title">Maintenance Scheduled</div><div class="alert-meta">7 hours ago</div></div>
+      </div></div>
+    </aside>
+  </div>
+</section>
+
+<section class="panel" id="panel-registry"><div class="page-head"><div><h2>User Registry</h2><p>All registered accounts. Select a record to open the full file.</p></div></div><div class="toolbar"><input id="userSearch" placeholder="Search name, email or ID"><select id="regFilter"><option>All accounts</option><option>Active</option><option>Frozen</option><option>Not KYC-verified</option></select></div><div class="box"><div class="table-wrap"><table><thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>KYC</th><th>Wallet value (₦)</th><th>Plans</th><th>Status</th><th>Registered</th></tr></thead><tbody id="usersBody"></tbody></table></div></div></section>
+
+<section class="panel" id="panel-kyc"><div class="page-head"><div><h2>KYC Review</h2><p>Identity verification cases awaiting a compliance decision.</p></div></div><div class="tabs"><button class="tab active">Pending (8)</button><button class="tab">Approved</button><button class="tab">Rejected</button></div><div class="box"><div class="table-wrap"><table><thead><tr><th>Case</th><th>Applicant</th><th>Document</th><th>Doc. number</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody id="kycBody"></tbody></table></div></div></section>
+
+<section class="panel" id="panel-payouts"><div class="page-head"><div><h2>Payout Authorisation</h2><p>Withdrawal requests requiring treasury sign-off.</p></div></div><div class="tabs"><button class="tab active">Pending (5)</button><button class="tab">Approved</button><button class="tab">Rejected</button></div><div class="box"><div class="table-wrap"><table><thead><tr><th>Reference</th><th>Account holder</th><th>Amount</th><th>Destination</th><th>Requested</th><th>Status</th><th></th></tr></thead><tbody id="wdBody"></tbody></table></div></div></section>
+
+<section class="panel" id="panel-risk"><div class="page-head"><div><h2>Risk Monitor</h2><p>Automated flags: large withdrawals, rapid repeat requests, unverified large investments.</p></div></div><div class="box"><div class="table-wrap"><table><thead><tr><th>Severity</th><th>Rule triggered</th><th>Account</th><th>Detail</th><th></th></tr></thead><tbody id="riskBody"></tbody></table></div></div></section>
+
+<section class="panel" id="panel-audit"><div class="page-head"><div><h2>Audit Log</h2><p>Chronological record of platform and administrator actions.</p></div></div><div class="toolbar"><input id="auditSearch" placeholder="Search subject or detail"><select><option>All events</option><option>Authentication</option><option>KYC</option><option>Withdrawal</option></select></div><div class="box"><div class="table-wrap"><table><thead><tr><th>Timestamp</th><th>Event</th><th>Subject</th><th>Detail</th></tr></thead><tbody id="auditBody"></tbody></table></div></div></section>
+
+<section class="panel" id="panel-reports"><div class="page-head"><div><h2>Reports</h2><p>Download data extracts as CSV.</p></div></div><div class="kpi-row report-grid">
+  <div class="kpi"><div class="kpi-top"><span>Report 01</span><span>▤</span></div><div class="v" style="font-size:17px">User registry</div><div class="d" style="margin-bottom:12px">Balances, KYC status, plans.</div><button class="btn btn-primary">Download CSV</button></div>
+  <div class="kpi"><div class="kpi-top"><span>Report 02</span><span>▤</span></div><div class="v" style="font-size:17px">Payout ledger</div><div class="d" style="margin-bottom:12px">Withdrawals with bank details.</div><button class="btn btn-primary">Download CSV</button></div>
+  <div class="kpi"><div class="kpi-top"><span>Report 03</span><span>▤</span></div><div class="v" style="font-size:17px">Audit trail</div><div class="d" style="margin-bottom:12px">Full activity log.</div><button class="btn btn-primary">Download CSV</button></div>
+</div></section>
+</div>
+</main>
+</div>
+
+<script>
+const users=[
+ ['USR-1042','Daniel Bassey','daniel@example.com','Verified','₦1,250,000','3','Active','01 Oct 2026'],
+ ['USR-1038','Grace Okafor','grace@example.com','Verified','₦845,000','2','Active','30 Sep 2026'],
+ ['USR-1029','Samuel James','samuel@example.com','Pending','₦420,000','1','Active','29 Sep 2026'],
+ ['USR-1017','Mercy John','mercy@example.com','Verified','₦2,180,000','4','Frozen','25 Sep 2026'],
+ ['USR-1008','David Essien','david@example.com','Pending','₦195,000','1','Active','22 Sep 2026']
+];
+const queue=[
+ ['HIGH','KYC REVIEW','Samuel James','12 min'],
+ ['HIGH','PAYOUT REVIEW','Mercy John','24 min'],
+ ['MEDIUM','RISK FLAG','David Essien','37 min'],
+ ['MEDIUM','KYC REVIEW','Amina Yusuf','1 hr'],
+ ['LOW','ACCOUNT CHECK','Grace Okafor','2 hrs']
+];
+const audits=[
+ ['19:02','KYC_SUBMITTED','USR-1029','Identity documents uploaded'],
+ ['18:54','PAYOUT_REQUESTED','USR-1017','Withdrawal request ₦340,000'],
+ ['18:41','LOGIN_FAILED','USR-1008','Three failed attempts'],
+ ['18:28','KYC_APPROVED','USR-1038','Administrator review completed'],
+ ['18:10','PROFILE_UPDATED','USR-1042','Bank details updated']
+];
+const kycs=[
+ ['KYC-8841','Samuel James','National ID','•••• 4921','12 min ago','Pending'],
+ ['KYC-8839','Amina Yusuf','Passport','•••• 1108','24 min ago','Pending'],
+ ['KYC-8835','David Essien','Driver Licence','•••• 7732','37 min ago','Pending'],
+ ['KYC-8828','John Peter','National ID','•••• 3190','1 hr ago','Pending']
+];
+const payouts=[
+ ['WD-30981','Mercy John','₦340,000','GTBank •••• 9012','24 min ago','Pending'],
+ ['WD-30977','Samuel James','₦120,000','UBA •••• 4421','51 min ago','Pending'],
+ ['WD-30970','Grace Okafor','₦85,000','Access •••• 1198','2 hrs ago','Pending'],
+ ['WD-30961','David Essien','₦60,000','Zenith •••• 3007','4 hrs ago','Pending']
+];
+const risks=[
+ ['CRITICAL','Large withdrawal','USR-1017','₦340,000 withdrawal exceeds review threshold'],
+ ['CRITICAL','Rapid repeat requests','USR-1029','4 withdrawal attempts in 20 minutes'],
+ ['MEDIUM','Unverified investment','USR-1008','Investment exceeds ₦100,000 while KYC is pending'],
+ ['LOW','Login anomaly','USR-1038','New device and unusual location']
+];
+
+function rows(id,data,render){document.getElementById(id).innerHTML=data.map(render).join('')}
+const badge=s=>`<span class="badge ${s.toLowerCase()==='critical'?'critical':s.toLowerCase()==='medium'?'medium':s.toLowerCase()==='low'?'low':'success'}">${s}</span>`;
+rows('queueBody',queue,r=>`<tr><td>${badge(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><button class="btn btn-dark">Open</button></td></tr>`);
+rows('auditMini',audits,r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`);
+rows('usersBody',users,r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${badge(r[3])}</td><td>${r[4]}</td><td>${r[5]}</td><td>${badge(r[6])}</td><td>${r[7]}</td></tr>`);
+rows('kycBody',kycs,r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${badge(r[5])}</td><td><div class="actions"><button class="btn btn-primary">Review</button><button class="btn btn-danger">Reject</button></div></td></tr>`);
+rows('wdBody',payouts,r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td style="color:#f4f6ff;font-weight:600">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${badge(r[5])}</td><td><div class="actions"><button class="btn btn-primary">Approve</button><button class="btn btn-danger">Reject</button></div></td></tr>`);
+rows('riskBody',risks,r=>`<tr><td>${badge(r[0])}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><button class="btn btn-dark">Investigate</button></td></tr>`);
+rows('auditBody',audits.concat([
+ ['17:59','WITHDRAWAL_APPROVED','USR-0991','Treasury approval completed'],
+ ['17:40','USER_REGISTERED','USR-1042','New account created']
+]),r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`);
+
+document.getElementById('today').textContent=new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});
+const navs=document.querySelectorAll('.navlink'), panels=document.querySelectorAll('.panel'), title=document.getElementById('pageTitle');
+navs.forEach(n=>n.addEventListener('click',e=>{
+ e.preventDefault(); const p=n.dataset.panel;
+ navs.forEach(x=>x.classList.remove('active')); n.classList.add('active');
+ panels.forEach(x=>x.classList.toggle('active',x.id==='panel-'+p));
+ title.textContent=n.querySelector('span').textContent;
+ document.getElementById('sidebar').classList.remove('open');
+}));
+document.getElementById('menuBtn').addEventListener('click',()=>document.getElementById('sidebar').classList.toggle('open'));
+document.getElementById('logoutBtn').addEventListener('click',e=>{e.preventDefault();alert('Session ended. Connect this button to your authentication/logout endpoint.')});
+
+document.querySelectorAll('.tabs').forEach(group=>{
+ group.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>{
+  group.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active');
+ }));
+});
+document.getElementById('userSearch').addEventListener('input',e=>{
+ const q=e.target.value.toLowerCase();
+ document.querySelectorAll('#usersBody tr').forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none');
+});
+document.getElementById('auditSearch').addEventListener('input',e=>{
+ const q=e.target.value.toLowerCase();
+ document.querySelectorAll('#auditBody tr').forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none');
+});
+</script>
+</body>
+</html>
